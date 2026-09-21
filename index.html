@@ -1,122 +1,288 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>到岗前作战包 · Offer→入职 衔接工具</title>
-<meta name="description" content="到岗前作战包：离职交接清单 / 社保断档测算 / 试用期100天台账。纯前端本地工具，数据不出本机。" />
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%232563eb'/%3E%3Cpath d='M28 54 L44 68 L73 34' stroke='white' stroke-width='11' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+<meta name="description" content="到岗前作战包：撤离交接清单 / 社保断档预警 / 试用期登陆台账。纯前端本地工具，数据不出本机。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230b0f14'/%3E%3Cpath d='M28 54 L44 68 L73 34' stroke='%23f5a623' stroke-width='11' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <style>
-  :root{
-    --bg:#f4f6fb; --card:#ffffff; --ink:#1f2937; --sub:#6b7280;
-    --primary:#2563eb; --primary-soft:#eef4ff; --ok:#10b981;
-    --warn:#f59e0b; --bad:#ef4444; --line:#e5e7eb; --radius:14px;
-    --shadow:0 6px 24px rgba(31,41,55,.08);
-  }
-  *{box-sizing:border-box;}
-  body{
-    margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
-    background:var(--bg); color:var(--ink); line-height:1.6;
-  }
-  header{
-    background:linear-gradient(135deg,#2563eb,#0ea5e9); color:#fff;
-    padding:28px 20px; text-align:center;
-  }
-  header h1{margin:0; font-size:24px; letter-spacing:1px;}
-  header p{margin:6px 0 0; opacity:.9; font-size:14px;}
-  .tabs{
-    display:flex; gap:8px; justify-content:center; flex-wrap:wrap;
-    padding:14px; background:var(--card); border-bottom:1px solid var(--line);
-    position:sticky; top:0; z-index:10;
-  }
-  .tabs button{
-    border:1px solid var(--line); background:#fff; color:var(--sub);
-    padding:9px 16px; border-radius:999px; cursor:pointer; font-size:14px;
-    transition:.2s;
-  }
-  .tabs button.active{background:var(--primary); color:#fff; border-color:var(--primary);}
-  main{max-width:880px; margin:0 auto; padding:22px 16px 60px;}
-  .panel{display:none; animation:fade .25s ease;}
-  .panel.active{display:block;}
-  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
-  .card{
-    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
-    padding:18px; margin-bottom:16px; box-shadow:var(--shadow);
-  }
-  .card h2{margin:0 0 12px; font-size:17px;}
-  .card h3{margin:16px 0 8px; font-size:15px; color:var(--primary);}
-  label{display:block; font-size:13px; color:var(--sub); margin:10px 0 4px;}
-  input,select{
-    width:100%; padding:9px 11px; border:1px solid var(--line); border-radius:10px;
-    font-size:14px; background:#fff; color:var(--ink);
-  }
-  .row{display:flex; gap:12px; flex-wrap:wrap;}
-  .row > div{flex:1; min-width:140px;}
-  .switch{display:inline-flex; align-items:center; gap:8px; cursor:pointer; user-select:none;}
-  .switch input{width:auto;}
-  .btn{
-    margin-top:14px; background:var(--primary); color:#fff; border:none;
-    padding:10px 18px; border-radius:10px; cursor:pointer; font-size:14px;
-  }
-  .btn.ghost{background:var(--primary-soft); color:var(--primary);}
-  .progress{height:10px; background:var(--line); border-radius:999px; overflow:hidden; margin:6px 0 12px;}
-  .progress > span{display:block; height:100%; background:var(--ok); width:0; transition:.3s;}
-  .phase{border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:12px;}
-  .phase .ph-title{font-weight:600; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;}
-  .tag{font-size:12px; padding:2px 9px; border-radius:999px; background:var(--primary-soft); color:var(--primary);}
-  .tag.now{background:var(--warn); color:#fff;}
-  .item{display:flex; gap:10px; align-items:flex-start; padding:6px 0; font-size:14px;}
-  .item input{width:18px; height:18px; margin-top:3px; flex:none;}
-  .item.done span{text-decoration:line-through; color:var(--sub);}
-  .gauge-wrap{display:flex; gap:20px; align-items:center; flex-wrap:wrap;}
-  .gauge{position:relative; width:150px; height:150px;}
-  .gauge svg{transform:rotate(-90deg);}
-  .gauge .val{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;}
-  .gauge .val b{font-size:22px;}
-  .gauge .val small{color:var(--sub); font-size:12px;}
-  .result-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-top:8px;}
-  .stat{background:var(--primary-soft); border-radius:12px; padding:12px; text-align:center;}
-  .stat b{display:block; font-size:20px; color:var(--primary);}
-  .stat small{color:var(--sub); font-size:12px;}
-  .verdict{border-radius:12px; padding:12px 14px; margin-top:12px; font-size:14px;}
-  .verdict.ok{background:#ecfdf5; color:#047857;}
-  .verdict.warn{background:#fffbeb; color:#b45309;}
-  .verdict.bad{background:#fef2f2; color:#b91c1c;}
-  .timeline{position:relative; padding-left:22px;}
-  .timeline::before{content:""; position:absolute; left:7px; top:4px; bottom:4px; width:2px; background:var(--line);}
-  .tl-item{position:relative; padding:0 0 18px 14px;}
-  .tl-item::before{content:""; position:absolute; left:-19px; top:4px; width:14px; height:14px; border-radius:50%; background:#fff; border:3px solid var(--primary);}
-  .tl-item.past::before{background:var(--ok); border-color:var(--ok);}
-  .tl-item.near::before{background:var(--warn); border-color:var(--warn);}
-  .tl-date{font-size:12px; color:var(--sub);}
-  .tl-title{font-weight:600; font-size:15px;}
-  .tl-todo{font-size:13px; color:var(--sub); margin-top:2px;}
-  .badge{font-size:11px; padding:1px 8px; border-radius:999px; margin-left:6px; vertical-align:middle;}
-  .badge.past{background:#ecfdf5; color:#047857;}
-  .badge.near{background:#fffbeb; color:#b45309;}
-  .badge.future{background:var(--primary-soft); color:var(--primary);}
-  .note{font-size:12px; color:var(--sub); margin-top:10px;}
-  footer{max-width:880px; margin:0 auto; padding:0 16px 40px; font-size:12px; color:var(--sub);}
-  code{background:#f1f5f9; padding:1px 6px; border-radius:6px; font-size:13px;}
+:root{
+  --bg:#0b0f14; --panel:#121821; --card:#161e29; --card2:#1b2532;
+  --line:#26303d; --line2:#33404f;
+  --ink:#e6edf3; --sub:#8b98a9; --faint:#5c6a7d;
+  --amber:#f5a623; --amber-soft:rgba(245,166,35,.12);
+  --cyan:#22d3ee; --cyan-soft:rgba(34,211,238,.1);
+  --ok:#3fb950; --ok-soft:rgba(63,185,80,.12);
+  --bad:#f85149; --bad-soft:rgba(248,81,73,.12);
+  --r:12px; --r-lg:16px;
+  --mono:'SF Mono','Cascadia Code',Consolas,'Roboto Mono',monospace;
+  --grid:rgba(139,152,169,.05);
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font:15px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:32px 32px;
+}
+/* ---------- Hero ---------- */
+.hero{
+  background:linear-gradient(180deg,#151d29,#0d1420); border-bottom:1px solid var(--line);
+  position:relative; padding:34px 20px 44px; text-align:center; overflow:hidden;
+}
+.hero::before{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(245,166,35,.025) 3px 4px);
+}
+.hero::after{
+  content:""; position:absolute; left:0; right:0; bottom:0; height:2px;
+  background:linear-gradient(90deg,transparent 5%,var(--amber) 50%,transparent 95%); opacity:.55;
+}
+.hero-tag{
+  display:inline-block; font-size:11px; letter-spacing:4px; color:var(--amber);
+  border:1px solid rgba(245,166,35,.35); padding:3px 14px; border-radius:999px;
+  margin-bottom:14px; font-family:var(--mono); position:relative;
+}
+.hero h1{margin:0 0 8px; font-size:27px; letter-spacing:3px; position:relative;}
+.hero p{margin:0 auto; max-width:560px; color:var(--sub); font-size:14px; position:relative;}
+.hero-meta{
+  margin-top:14px; font-size:12px; color:var(--faint); font-family:var(--mono); position:relative;
+}
+.hero-meta b{color:var(--amber); font-weight:600;}
+/* ---------- 状态条 ---------- */
+.statusbar{
+  max-width:920px; margin:-24px auto 0; padding:0 16px; position:relative; z-index:2;
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px;
+}
+.st{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--r);
+  padding:12px 16px; box-shadow:0 10px 28px rgba(0,0,0,.4);
+}
+.st-label{font-size:12px; color:var(--faint); letter-spacing:1px; display:flex; align-items:center; gap:6px;}
+.st b{font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:22px; display:block; margin-top:2px; line-height:1.3;}
+.st small{font-size:12px; color:var(--sub); display:block;}
+.st b.ok{color:var(--ok);} .st b.warn{color:var(--amber);} .st b.bad{color:var(--bad);} .st b.cy{color:var(--cyan);}
+/* ---------- Tabs ---------- */
+.tabs{
+  display:flex; gap:8px; justify-content:center; flex-wrap:wrap;
+  padding:18px 14px 4px; max-width:920px; margin:0 auto;
+}
+.tabs button{
+  border:1px solid var(--line); background:var(--panel); color:var(--sub);
+  padding:9px 18px; border-radius:999px; cursor:pointer; font-size:14px;
+  transition:.18s; display:inline-flex; align-items:center; gap:7px; font-family:inherit;
+}
+.tabs button:hover{border-color:var(--line2); color:var(--ink);}
+.tabs button.active{
+  background:var(--amber); color:#0b0f14; border-color:var(--amber);
+  font-weight:600; box-shadow:0 0 20px rgba(245,166,35,.22);
+}
+.tabs .ic{width:15px; height:15px;}
+/* ---------- 布局 ---------- */
+main{max-width:920px; margin:0 auto; padding:18px 16px 60px;}
+.panel{display:none; animation:fade .25s ease;}
+.panel.active{display:block;}
+@keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+.card{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--r-lg);
+  padding:22px; margin-bottom:16px; box-shadow:0 6px 24px rgba(0,0,0,.3);
+}
+.card-head{display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:6px;}
+.card h2{margin:0; font-size:18px; letter-spacing:1px; display:flex; align-items:center; gap:9px;}
+.card h2 .ic{width:18px; height:18px; color:var(--amber);}
+.card .desc{font-size:13px; color:var(--sub); margin:0 0 14px;}
+h3{margin:18px 0 8px; font-size:14px; color:var(--cyan); letter-spacing:1px;}
+label{display:block; font-size:12.5px; color:var(--sub); margin:10px 0 4px; letter-spacing:.5px;}
+input,select{
+  width:100%; padding:9px 12px; border:1px solid var(--line2); border-radius:9px;
+  font-size:14px; background:var(--panel); color:var(--ink); font-family:inherit;
+  transition:border-color .15s, box-shadow .15s;
+}
+input:focus,select:focus{outline:none; border-color:var(--amber); box-shadow:0 0 0 3px var(--amber-soft);}
+input[type=date]{color-scheme:dark;}
+select{
+  appearance:none; -webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238b98a9' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 12px center; padding-right:30px;
+}
+.row{display:flex; gap:12px; flex-wrap:wrap;}
+.row > div{flex:1; min-width:150px;}
+.switch{display:inline-flex; align-items:center; gap:8px; cursor:pointer; user-select:none; font-size:14px; color:var(--ink); margin-top:12px;}
+.switch input{width:auto;}
+/* checkbox 自绘 */
+.ck{
+  appearance:none; -webkit-appearance:none; width:18px; height:18px;
+  border:2px solid var(--line2); border-radius:5px; position:relative; cursor:pointer;
+  transition:.15s; flex:none; background:var(--panel); margin:0;
+}
+.ck:checked{background:var(--amber); border-color:var(--amber);}
+.ck:checked::after{
+  content:""; position:absolute; left:4.5px; top:1px; width:5px; height:9px;
+  border:solid #0b0f14; border-width:0 2.5px 2.5px 0; transform:rotate(45deg);
+}
+/* 按钮 */
+.btn{
+  margin-top:14px; background:var(--amber); color:#0b0f14; border:1px solid var(--amber);
+  padding:10px 20px; border-radius:10px; cursor:pointer; font-size:14px; font-weight:600;
+  font-family:inherit; transition:.15s; display:inline-flex; align-items:center; gap:7px;
+}
+.btn:hover{filter:brightness(1.1); box-shadow:0 0 18px rgba(245,166,35,.3);}
+.btn.ghost{background:transparent; color:var(--amber);}
+.btn.ghost:hover{background:var(--amber-soft); box-shadow:none;}
+.btn.cy{background:transparent; color:var(--cyan); border-color:rgba(34,211,238,.4);}
+.btn.cy:hover{background:var(--cyan-soft); box-shadow:none;}
+.btn .ic{width:15px; height:15px;}
+.btnrow{display:flex; gap:10px; flex-wrap:wrap;}
+/* 进度 */
+.progress{height:10px; background:var(--line); border-radius:999px; overflow:hidden; margin:16px 0 6px;}
+.progress > span{display:block; height:100%; background:linear-gradient(90deg,var(--amber),#ffb84d); width:0; transition:.4s;}
+.progress.done > span{background:linear-gradient(90deg,var(--cyan),#67e8f9);}
+#h-progress-text{font-size:13px; color:var(--sub); font-variant-numeric:tabular-nums;}
+.mission-done{
+  display:none; margin-top:12px; padding:12px 16px; border:1px solid rgba(34,211,238,.45);
+  background:var(--cyan-soft); border-radius:12px; color:var(--cyan); font-size:14px;
+  align-items:center; gap:10px; animation:pop .45s cubic-bezier(.2,1.4,.4,1);
+}
+.mission-done.show{display:flex;}
+.mission-done .ic{width:20px; height:20px; flex:none;}
+@keyframes pop{0%{transform:scale(.85);opacity:0;}100%{transform:scale(1);opacity:1;}}
+/* 阶段卡 */
+.phase{
+  border:1px solid var(--line); border-left:3px solid var(--amber); border-radius:12px;
+  padding:14px 16px; margin-top:12px; background:var(--panel);
+}
+.ph-title{font-weight:600; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;}
+.ph-title .ph-sub{font-size:12px; color:var(--faint); font-weight:400; font-family:var(--mono);}
+.tag{font-size:11px; padding:2px 10px; border-radius:999px; background:var(--amber-soft); color:var(--amber); letter-spacing:1px;}
+.tag.now{background:var(--amber); color:#0b0f14; font-weight:600;}
+.item{display:flex; gap:10px; align-items:flex-start; padding:5px 0; font-size:14px; color:var(--ink); cursor:pointer;}
+.item input{margin-top:4px;}
+.item.done span{text-decoration:line-through; color:var(--faint);}
+.item .role-chip{flex:none; font-size:11px; color:var(--cyan); border:1px solid rgba(34,211,238,.3); border-radius:5px; padding:0 6px; margin-top:3px; font-family:var(--mono);}
+.scale-hint{font-size:12.5px; color:var(--sub); background:var(--panel); border:1px dashed var(--line2); border-radius:9px; padding:8px 12px; margin-top:14px;}
+.scale-hint b{color:var(--cyan); font-weight:600;}
+/* 断档模块 */
+.gauge-wrap{display:flex; gap:24px; align-items:center; flex-wrap:wrap; margin-top:18px;}
+.gauge{position:relative; width:150px; height:150px; flex:none;}
+.gauge svg{transform:rotate(-90deg);}
+.gauge .val{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;}
+.gauge .val b{font-size:20px; font-family:var(--mono);}
+.gauge .val small{color:var(--faint); font-size:11px; letter-spacing:2px;}
+#s-arc{transition:stroke-dashoffset .6s ease, stroke .3s;}
+.bignums{flex:1; min-width:230px; display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:12px;}
+.bn{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px 12px; text-align:center;}
+.bn b{display:block; font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:34px; line-height:1.2; color:var(--amber);}
+.bn b.cy{color:var(--cyan);} .bn b.ink{color:var(--ink); font-size:26px; padding-top:6px;}
+.bn small{font-size:12px; color:var(--sub);}
+.gapcal{display:flex; gap:6px; flex-wrap:wrap; margin-top:16px;}
+.gm{flex:1; min-width:56px; max-width:90px; text-align:center; padding:8px 4px; border-radius:9px; border:1px solid var(--line); background:var(--panel);}
+.gm b{display:block; font-size:13px; font-variant-numeric:tabular-nums;}
+.gm small{font-size:11px; color:var(--faint);}
+.gm.paid{border-color:rgba(63,185,80,.45);} .gm.paid small{color:var(--ok);}
+.gm.gap{background:var(--amber-soft); border-color:var(--amber);} .gm.gap small{color:var(--amber);}
+.gm.joinm{border-color:rgba(34,211,238,.45);} .gm.joinm small{color:var(--cyan);}
+.gm.ellipsis{border:none; background:none; align-self:center; color:var(--faint);}
+.verdict{border-radius:12px; padding:12px 16px; margin-top:16px; font-size:14px;}
+.verdict.ok{background:var(--ok-soft); color:#56d364; border:1px solid rgba(63,185,80,.35);}
+.verdict.warn{background:var(--amber-soft); color:#ffb84d; border:1px solid rgba(245,166,35,.4);}
+.verdict.bad{background:var(--bad-soft); color:#ff8585; border:1px solid rgba(248,81,73,.4);}
+.edge-opts{margin-top:14px; padding:12px 14px; border:1px dashed var(--line2); border-radius:11px; background:var(--panel);}
+.edge-opts .item{padding:4px 0; font-size:13.5px;}
+/* 台账 */
+.timeline{position:relative; padding-left:24px; margin-top:16px;}
+.timeline::before{content:""; position:absolute; left:7px; top:4px; bottom:4px; width:2px; background:var(--line);}
+.tl-item{position:relative; padding:0 0 20px 16px;}
+.tl-item::before{
+  content:""; position:absolute; left:-22px; top:6px; width:12px; height:12px; border-radius:50%;
+  background:var(--bg); border:3px solid var(--amber); transition:.3s;
+}
+.tl-item.past::before{background:var(--ok); border-color:var(--ok);}
+.tl-item.near::before{background:var(--amber); border-color:var(--amber); box-shadow:0 0 10px rgba(245,166,35,.5);}
+.tl-date{font-size:12px; color:var(--faint); font-family:var(--mono); font-variant-numeric:tabular-nums;}
+.tl-title{font-weight:600; font-size:15px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+.tl-todo{font-size:13px; color:var(--sub); margin-top:2px;}
+.tl-tasks{margin-top:6px; padding:10px 14px; background:var(--panel); border:1px solid var(--line); border-radius:10px;}
+.badge{font-size:11px; padding:1px 9px; border-radius:999px; font-family:var(--mono);}
+.badge.past{background:var(--ok-soft); color:#56d364;}
+.badge.near{background:var(--amber-soft); color:var(--amber);}
+.badge.future{background:var(--cyan-soft); color:var(--cyan);}
+.mile-prog{font-size:11px; color:var(--faint); font-family:var(--mono); font-variant-numeric:tabular-nums;}
+.note{font-size:12.5px; color:var(--faint); margin-top:14px; line-height:1.8;}
+.note b{color:var(--sub);}
+footer{max-width:920px; margin:0 auto; padding:0 16px 44px; font-size:12px; color:var(--faint); text-align:center; line-height:1.9;}
+footer b{color:var(--sub);}
+code{background:var(--card2); padding:1px 6px; border-radius:6px; font-size:12.5px; color:var(--cyan); font-family:var(--mono);}
+.ic{stroke:currentColor; fill:none; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round;}
+@media (max-width:640px){
+  .hero h1{font-size:22px;}
+  .tabs{justify-content:flex-start; overflow-x:auto; flex-wrap:nowrap; padding-bottom:8px;}
+  .tabs button{white-space:nowrap; flex:none;}
+  .bn b{font-size:26px;}
+  .card{padding:16px;}
+}
+@media print{
+  body{background:#fff; color:#000; background-image:none;}
+  .hero,.tabs,.statusbar,.btnrow,.no-print,footer,#social,#probation,.mission-done{display:none !important;}
+  main{max-width:100%; padding:0;}
+  .panel{display:block !important;}
+  .card{box-shadow:none; border:1px solid #ccc; background:#fff; color:#000;}
+  .phase{background:#fff; color:#000; border-color:#ccc;}
+  .item{color:#000;} .item span{color:#000 !important; text-decoration:none !important;}
+  h2,.ph-title{color:#000;} .tag{display:none;}
+}
 </style>
 </head>
 <body>
-<header>
+
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01" stroke-width="2"/></symbol>
+  <symbol id="i-gauge" viewBox="0 0 24 24"><path d="M4 17a8 8 0 1 1 16 0"/><path d="M12 17l4-5"/><path d="M2 17h20"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4h13l-3.5 4L18 12H5"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></symbol>
+  <symbol id="i-print" viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18h-2a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-2M6 14h12v7H6z"/></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></symbol>
+</svg>
+
+<header class="hero">
+  <div class="hero-tag">MISSION BRIEF</div>
   <h1>到岗前作战包</h1>
-  <p>Offer → 入职 衔接工具 · 离职交接 / 社保断档 / 试用期台账，一站管稳最后一公里</p>
+  <p>Offer → 入职的最后一公里：撤离交接、断档预警、登陆台账。别人教你怎么拿 offer，这里管你怎么不翻车。</p>
+  <div class="hero-meta"><b>v2.0</b> · 纯前端单文件 · 数据 100% 存本地 · 零上传</div>
 </header>
 
-<nav class="tabs">
-  <button data-tab="handover" class="active">① 离职交接清单</button>
-  <button data-tab="social">② 社保断档测算</button>
-  <button data-tab="probation">③ 试用期100天台账</button>
+<section class="statusbar no-print">
+  <div class="st">
+    <span class="st-label"><svg class="ic" width="13" height="13"><use href="#i-cal"/></svg>距 离 入 职</span>
+    <b id="st-join">—</b><small id="st-join-sub">在下方任一模块填写入职日解锁</small>
+  </div>
+  <div class="st">
+    <span class="st-label"><svg class="ic" width="13" height="13"><use href="#i-gauge"/></svg>断 档 风 险</span>
+    <b id="st-risk">—</b><small id="st-risk-sub">未测算</small>
+  </div>
+  <div class="st">
+    <span class="st-label"><svg class="ic" width="13" height="13"><use href="#i-flag"/></svg>下一里程碑</span>
+    <b id="st-mile">—</b><small id="st-mile-sub">生成登陆台账解锁</small>
+  </div>
+</section>
+
+<nav class="tabs no-print">
+  <button data-tab="handover" class="active"><svg class="ic"><use href="#i-list"/></svg>撤离清单</button>
+  <button data-tab="social"><svg class="ic"><use href="#i-gauge"/></svg>断档预警</button>
+  <button data-tab="probation"><svg class="ic"><use href="#i-flag"/></svg>登陆台账</button>
 </nav>
 
 <main>
-  <!-- ============ 模块1：离职交接清单 ============ -->
+  <!-- ============ 模块1：撤离清单 ============ -->
   <section id="handover" class="panel active">
     <div class="card">
-      <h2>离职交接清单生成器</h2>
+      <div class="card-head">
+        <h2><svg class="ic"><use href="#i-list"/></svg>撤离清单生成器</h2>
+        <span class="tag">PHASE 01 · 撤离</span>
+      </div>
+      <p class="desc">按岗位、团队规模与是否带人生成四阶段交接任务。勾选进度自动保存在本机，可打印成纸质清单带去交接会。</p>
       <div class="row">
         <div>
           <label>岗位类型</label>
@@ -126,7 +292,7 @@
             <option value="产品">产品</option>
             <option value="设计">设计</option>
             <option value="运营">运营</option>
-            <option value="其他">其他</option>
+            <option value="通用">通用 / 其他</option>
           </select>
         </div>
         <div>
@@ -140,344 +306,558 @@
         </div>
         <div>
           <label>距离职还有（天）</label>
-          <input id="h-countdown" type="number" value="30" min="0" />
+          <input id="h-countdown" type="number" value="30" min="0">
         </div>
       </div>
-      <label class="switch"><input id="h-lead" type="checkbox" /> 我带人（有下属）</label>
-      <button class="btn" id="h-gen">生成 / 刷新清单</button>
-      <div class="progress"><span id="h-bar"></span></div>
-      <div id="h-progress-text" style="font-size:13px;color:var(--sub);"></div>
+      <label class="switch"><input id="h-lead" type="checkbox" class="ck"> 我带人（有下属）</label>
+      <div class="btnrow">
+        <button class="btn" id="h-gen">刷新清单</button>
+        <button class="btn cy" id="h-print"><svg class="ic"><use href="#i-print"/></svg>打印纸质版</button>
+      </div>
+      <div class="progress" id="h-progress"><span id="h-bar"></span></div>
+      <div id="h-progress-text"></div>
+      <div class="mission-done" id="h-done">
+        <svg class="ic"><use href="#i-check"/></svg>
+        MISSION COMPLETE · 撤离任务全部完成，准予登陆。
+      </div>
       <div id="h-phases"></div>
-      <div class="note">勾选项会自动保存在本地浏览器（localStorage），刷新不丢。带人场景会自动追加「下属安排」子项。</div>
+      <div class="scale-hint" id="h-scale-hint"></div>
+      <div class="note">带 <span class="role-chip" style="display:inline-flex;position:static;">岗位</span> 标记的条目随岗位类型自动追加；勾选状态仅保存在你的浏览器（localStorage）。</div>
     </div>
   </section>
 
-  <!-- ============ 模块2：社保断档测算 ============ -->
+  <!-- ============ 模块2：断档预警 ============ -->
   <section id="social" class="panel">
     <div class="card">
-      <h2>社保断档测算器</h2>
+      <div class="card-head">
+        <h2><svg class="ic"><use href="#i-gauge"/></svg>社保断档预警</h2>
+        <span class="tag">PHASE 02 · 预警</span>
+      </div>
+      <p class="desc">按「整月断档 + 月内衔接」的专业口径测算：连续缴纳以整月计，多数城市断一个月即清零重算。 输入两个日期，看清断几个月、补缴多少、离红线多远。</p>
       <div class="row">
         <div>
-          <label>城市</label>
+          <label>城市（自动填入购房连续缴纳参考门槛）</label>
           <select id="s-city"></select>
         </div>
         <div>
-          <label>购房连续缴纳门槛（月）</label>
-          <input id="s-threshold" type="number" value="60" min="0" />
+          <label>门槛月数（可手动修正）</label>
+          <input id="s-threshold" type="number" value="60" min="0">
         </div>
         <div>
           <label>月缴费基数（元）</label>
-          <input id="s-base" type="number" value="10000" min="0" />
+          <input id="s-base" type="number" value="10000" min="0">
         </div>
       </div>
       <div class="row">
         <div>
           <label>离职日</label>
-          <input id="s-leave" type="date" />
+          <input id="s-leave" type="date">
         </div>
         <div>
-          <label>入职日（新公司）</label>
-          <input id="s-join" type="date" />
+          <label>入职日（新公司 · 全局共享）</label>
+          <input id="s-join" type="date">
         </div>
         <div>
-          <label>月补缴费率 %（含企业，默认 38.5）</label>
-          <input id="s-rate" type="number" value="38.5" step="0.1" min="0" />
+          <label>月缴额费率 %（企业+个人，示例 38.5）</label>
+          <input id="s-rate" type="number" value="38.5" step="0.1" min="0">
         </div>
       </div>
-      <button class="btn" id="s-cal">测算断档风险</button>
-        <button class="btn ghost" id="s-demo">填入示例</button>
+      <div class="edge-opts">
+        <div style="font-size:12px;color:var(--faint);letter-spacing:1px;margin-bottom:2px;">边界月确认（影响断档月数的口径）</div>
+        <label class="item" style="cursor:pointer;"><input type="checkbox" id="s-leave-same" class="ck" checked><span>离职当月原公司照常缴纳（多数公司缴至离职当月）</span></label>
+        <label class="item" style="cursor:pointer;"><input type="checkbox" id="s-join-same" class="ck" checked><span>入职当月新公司开始缴纳（惯例：15 号前入职当月缴，之后次月缴）</span></label>
+      </div>
+      <div class="btnrow">
+        <button class="btn" id="s-cal">测算断档风险</button>
+        <button class="btn ghost" id="s-demo"><svg class="ic"><use href="#i-zap"/></svg>填入示例</button>
+      </div>
 
-      <div class="gauge-wrap" style="margin-top:16px;">
+      <div class="gauge-wrap" style="margin-top:18px;">
         <div class="gauge">
           <svg width="150" height="150" viewBox="0 0 150 150">
-            <circle cx="75" cy="75" r="62" fill="none" stroke="#e5e7eb" stroke-width="14"/>
-            <circle id="s-arc" cx="75" cy="75" r="62" fill="none" stroke="#10b981" stroke-width="14"
+            <circle cx="75" cy="75" r="62" fill="none" stroke="#26303d" stroke-width="13"/>
+            <circle id="s-arc" cx="75" cy="75" r="62" fill="none" stroke="#3fb950" stroke-width="13"
               stroke-linecap="round" stroke-dasharray="389.56" stroke-dashoffset="389.56"/>
           </svg>
-          <div class="val"><b id="s-level">—</b><small id="s-level-sub">风险等级</small></div>
+          <div class="val"><b id="s-level">—</b><small id="s-level-sub">RISK LEVEL</small></div>
         </div>
-        <div style="flex:1; min-width:220px;">
-          <div class="result-grid">
-            <div class="stat"><b id="s-days">0</b><small>断档天数</small></div>
-            <div class="stat"><b id="s-months">0</b><small>断档月数(≈)</small></div>
-            <div class="stat"><b id="s-cost">¥0</b><small>补缴估算</small></div>
-          </div>
+        <div class="bignums">
+          <div class="bn"><b id="s-gap">0</b><small>断档整月数</small></div>
+          <div class="bn"><b class="ink" id="s-days">0</b><small>自然日（参考）</small></div>
+          <div class="bn"><b class="cy" id="s-cost">￥0</b><small>补缴估算</small></div>
         </div>
       </div>
+      <div class="gapcal" id="s-gapcal"></div>
       <div id="s-verdict" class="verdict ok">填写日期后点击测算。</div>
       <div class="note">
-        城市门槛为公开资料整理的<strong>示例值</strong>，各地政策随时调整，且「连续缴纳」通常要求无中断——
-        断档即清零、需重新累计满门槛月数。请以当地住建 / 人社官方口径为准；本工具仅作风险提示，不构成政策结论。
+        口径说明：连续缴纳按<b>整月</b>计算；边界月由你按实际情况勾选确认（默认按惯例：离职当月原公司缴、15 号前入职当月新公司缴）。
+        城市门槛为公开信息整理的<b>示例值</b>，各地政策随时调整且差异极大，落户 / 车牌等场景门槛不同——请手动修正并以当地住建 / 人社官方口径为准。
+        <b>多数城市规定补缴不计入连续缴纳年限</b>，断档后通常需从重新缴纳之日起重新累计。本工具仅作风险提示，不构成政策结论。
       </div>
     </div>
   </section>
 
-  <!-- ============ 模块3：试用期100天台账 ============ -->
+  <!-- ============ 模块3：登陆台账 ============ -->
   <section id="probation" class="panel">
     <div class="card">
-      <h2>试用期 100 天生存台账</h2>
-      <label>入职日</label>
-      <input id="p-join" type="date" />
-      <button class="btn" id="p-gen">生成台账</button>
-        <button class="btn ghost" id="p-demo">填入示例</button>
-      <div id="p-timeline" class="timeline" style="margin-top:16px;"></div>
-      <div class="note">里程碑日期按入职日自动推算；状态（未到 / 临近 / 已过）基于你的本机当前日期。</div>
+      <div class="card-head">
+        <h2><svg class="ic"><use href="#i-flag"/></svg>试用期 100 天登陆台账</h2>
+        <span class="tag">PHASE 03 · 登陆</span>
+      </div>
+      <p class="desc">五个里程碑、每个里程碑配可勾选行动项。状态按本机日期自动标注：已过 / 临近 / 未到，转正答辩提前预警。</p>
+      <div class="row">
+        <div>
+          <label>入职日（与断档预警全局共享）</label>
+          <input id="p-join" type="date">
+        </div>
+      </div>
+      <div class="btnrow">
+        <button class="btn" id="p-gen">生成台账</button>
+        <button class="btn ghost" id="p-demo"><svg class="ic"><use href="#i-zap"/></svg>填入示例</button>
+      </div>
+      <div id="p-timeline" class="timeline"></div>
+      <div class="note">里程碑日期按入职日自动推算；行动项勾选进度独立保存，全部完成即该里程碑点亮。</div>
     </div>
   </section>
 </main>
 
 <footer>
-  数据仅保存在你本地浏览器，不会上传。本工具为求职辅助演示，涉及政策 / 金额均为估算与示例，请以官方信息为准。
+  <b>到岗前作战包</b> · 清单内容综合公开的离职交接流程与试用期实践整理；社保门槛与费率为示例值，请以当地官方口径为准。<br>
+  所有数据仅保存在你本地浏览器，不会上传。Made for the in-between days.
 </footer>
 
 <script>
-/* ---------------- 通用：本地存储 ---------------- */
-const LS = {
-  get(k, d){ try{ const v = localStorage.getItem('dzb_'+k); return v===null?d:JSON.parse(v); }catch(e){ return d; } },
-  set(k, v){ try{ localStorage.setItem('dzb_'+k, JSON.stringify(v)); }catch(e){} }
+/* ================= 通用 ================= */
+var LS = {
+  get: function(k, d){ try{ var v = localStorage.getItem('dzb2_'+k); return v===null?d:JSON.parse(v); }catch(e){ return d; } },
+  set: function(k, v){ try{ localStorage.setItem('dzb2_'+k, JSON.stringify(v)); }catch(e){} }
 };
+var DEMO = new URLSearchParams(location.search).get('demo') === '1';
+function pad(n){ return String(n).padStart(2,'0'); }
+function fmtD(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function today0(){ var t=new Date(); t.setHours(0,0,0,0); return t; }
 
-/* ---------------- Tab 切换 ---------------- */
-document.querySelectorAll('.tabs button').forEach(b=>{
-  b.onclick = ()=>{
-    document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));
-    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
-    b.classList.add('active');
-    document.getElementById(b.dataset.tab).classList.add('active');
-  };
+/* ================= Tabs + URL 同步 ================= */
+var TABS = ['handover','social','probation'];
+function activateTab(tab, push){
+  if(TABS.indexOf(tab) < 0) return;
+  var btn = document.querySelector('.tabs button[data-tab="'+tab+'"]');
+  if(!btn) return;
+  document.querySelectorAll('.tabs button').forEach(function(x){ x.classList.remove('active'); });
+  document.querySelectorAll('.panel').forEach(function(x){ x.classList.remove('active'); });
+  btn.classList.add('active');
+  document.getElementById(tab).classList.add('active');
+  if(push !== false){
+    try{ history.replaceState(null, '', '?tab='+tab+(DEMO?'&demo=1':'')); }catch(e){}
+  }
+}
+document.querySelectorAll('.tabs button').forEach(function(b){
+  b.addEventListener('click', function(){ activateTab(b.dataset.tab); });
 });
 
-/* ---------------- 模块1：离职交接清单 ---------------- */
-const H_PHASES = [
-  { key:'T30', name:'T-30 · 启动交接', items:[
+/* ================= 状态条 ================= */
+function updateStatusbar(){
+  var join = LS.get('join_date','');
+  var el = document.getElementById('st-join');
+  var elSub = document.getElementById('st-join-sub');
+  el.className = '';
+  if(join){
+    var diff = Math.round((new Date(join+'T00:00:00') - today0())/86400000);
+    if(diff > 0){ el.textContent = diff + ' 天'; elSub.textContent = '保持节奏，别松劲'; }
+    else if(diff === 0){ el.textContent = '今天'; el.classList.add('ok'); elSub.textContent = '登陆日，稳住'; }
+    else { el.textContent = '已 ' + (-diff) + ' 天'; el.classList.add('cy'); elSub.textContent = '已登陆，看台账'; }
+  } else { el.textContent = '—'; elSub.textContent = '在下方任一模块填写入职日解锁'; }
+
+  var risk = document.getElementById('st-risk');
+  var riskSub = document.getElementById('st-risk-sub');
+  var lv = LS.get('last_risk', null);
+  risk.className = '';
+  if(lv === null){ risk.textContent = '—'; riskSub.textContent = '未测算'; }
+  else if(lv === 0){ risk.textContent = '无断档'; risk.classList.add('ok'); riskSub.textContent = '连续缴纳未中断'; }
+  else { risk.textContent = lv + ' 个月'; risk.classList.add('warn'); riskSub.textContent = '连续缴纳已中断'; }
+
+  var mile = document.getElementById('st-mile');
+  var mileSub = document.getElementById('st-mile-sub');
+  var next = LS.get('next_mile', null);
+  mile.className = '';
+  if(next && next.title){ mile.textContent = next.title; if(next.diff > 0){ mile.classList.add('cy'); mileSub.textContent = '还有 ' + next.diff + ' 天'; } else if(next.diff === 0){ mile.classList.add('warn'); mileSub.textContent = '就是今天'; } else { mile.classList.add('warn'); mileSub.textContent = '进行中 · 临近'; } }
+  else { mile.textContent = '—'; mileSub.textContent = '生成登陆台账解锁'; }
+}
+
+/* ================= 入职日全局联动 ================= */
+function setJoinDate(v){
+  LS.set('join_date', v);
+  document.getElementById('s-join').value = v;
+  document.getElementById('p-join').value = v;
+  updateStatusbar();
+}
+document.getElementById('s-join').addEventListener('change', function(){ setJoinDate(this.value); genProbation(); });
+document.getElementById('p-join').addEventListener('change', function(){ setJoinDate(this.value); genProbation(); });
+
+/* ================= 模块1：撤离清单引擎 ================= */
+var H_PHASES = [
+  { key:'T30', name:'T-30 · 集结期', sub:'START', items:[
     '整理个人文档、账号与密码清单（不含机密）',
     '梳理在跟项目、负责人与当前进度',
     '盘点未完成的待办与遗留问题',
     '按公司流程向主管同步离职意向'
-  ], lead:['与下属 1v1 沟通去向，稳定团队情绪'] },
-  { key:'T14', name:'T-14 · 文档与移交', items:[
+  ]},
+  { key:'T14', name:'T-14 · 移交期', sub:'HANDOVER', items:[
     '输出交接文档初稿（项目/账号/对接人）',
     '指定临时接手人并拉群同步',
     '整理账号与权限移交清单',
     '梳理外部对接人（客户 / 供应商 / 合作方）'
-  ], lead:['指定下属临时负责人，明确汇报线','将团队成员工作重新分配并交底'] },
-  { key:'T7', name:'T-7 · 面对面交接', items:[
+  ]},
+  { key:'T7', name:'T-7 · 交底期', sub:'BRIEFING', items:[
     '交接文档评审并补全',
     '进行第一次正式面对面交接',
     '归还公司资产（设备 / 门禁 / 工牌）',
     '确认剩余年假与调休处理'
-  ], lead:['完成下属工作重新分配确认','与团队约定过渡期答疑窗口'] },
-  { key:'LAST', name:'最后一天 · 收尾', items:[
+  ]},
+  { key:'DD', name:'D-Day · 撤离日', sub:'EVAC', items:[
     '完成最终交接签字',
     '退出相关群聊并移交权限',
     '发送交接邮件（含联系人清单）',
     '备份个人资料（不含公司机密）',
     'IT 资产回收确认'
-  ], lead:['与团队正式告别，留下个人联系方式'] }
+  ]}
 ];
-
-function hStateKey(phaseKey, i){ return 'h_'+phaseKey+'_'+i; }
+/* 岗位专属条目：真正影响清单内容 */
+var ROLE_EXTRA = {
+  '开发': { T14:['代码仓库、分支与 CI 权限清单移交','生产环境密钥 / 证书 / 配置交接'], T7:['线上值班与告警响应移交','线上遗留问题与 crash 责任书面移交'] },
+  '测试': { T30:['缺陷遗留清单与风险等级说明'], T14:['测试用例库与自动化脚本移交','测试环境账号与配置清单整理'] },
+  '产品': { T30:['进行中需求的状态与关键决策记录'], T14:['PRD 与需求文档归档移交','数据看板与埋点字典移交'] },
+  '设计': { T14:['设计源文件与组件库移交','设计规范与切图标注归档'], T7:['进行中视觉稿进度与验收口径说明'] },
+  '运营': { T30:['活动排期与在办事项说明'], T14:['运营账号与权限移交','社群 / 用户资产清单交接'] },
+  '通用': {}
+};
+var SCALE_HINT = {
+  '1-5':'小团队：通常直接交接给 1 名接手人，重点把<b>账号与项目文档</b>一次交清。',
+  '6-20':'标准团队：建议<b>拉群 + 文档评审</b>交接，重要事项群里留痕。',
+  '21-50':'多团队协作：跨团队依赖（中台、网关、数据）需<b>逐项找对应负责人确认</b>，避免口头交接。',
+  '50+':'流程化组织：走公司交接系统 / HR 监督流程，本清单作为<b>自查补充</b>，签字页拍照留存。'
+};
+function hKey(ph, i){ return 'h_'+ph+'_'+i; }
 
 function renderHandover(){
-  const role = document.getElementById('h-role').value;
-  const size = document.getElementById('h-size').value;
-  const lead = document.getElementById('h-lead').checked;
-  const cd = parseInt(document.getElementById('h-countdown').value||'0',10);
+  var role = document.getElementById('h-role').value;
+  var size = document.getElementById('h-size').value;
+  var lead = document.getElementById('h-lead').checked;
+  var cd = parseInt(document.getElementById('h-countdown').value || '0', 10);
   LS.set('h_role', role); LS.set('h_size', size); LS.set('h_lead', lead); LS.set('h_cd', cd);
 
-  // 当前阶段高亮：cd<=0→LAST, <=7→T7, <=14→T14, else T30
-  let current = cd<=0 ? 'LAST' : cd<=7 ? 'T7' : cd<=14 ? 'T14' : 'T30';
-
-  const wrap = document.getElementById('h-phases');
+  var current = cd<=0 ? 'DD' : cd<=7 ? 'T7' : cd<=14 ? 'T14' : 'T30';
+  var extra = ROLE_EXTRA[role] || {};
+  var wrap = document.getElementById('h-phases');
   wrap.innerHTML = '';
-  let total=0, done=0;
-  H_PHASES.forEach(ph=>{
-    const items = lead ? ph.items.concat(ph.lead) : ph.items.slice();
+  var total = 0, done = 0;
+
+  H_PHASES.forEach(function(ph){
+    var items = ph.items.map(function(t){ return { t:t, role:false }; });
+    (extra[ph.key] || []).forEach(function(t){ items.push({ t:t, role:true }); });
+    if(lead){
+      if(ph.key==='T30') items.push({ t:'与下属 1v1 沟通去向，稳定团队情绪', role:false });
+      if(ph.key==='T14') items.push({ t:'指定下属临时负责人，明确汇报线；重新分配成员工作并交底', role:false });
+      if(ph.key==='T7')  items.push({ t:'完成下属工作分配确认；约定过渡期答疑窗口', role:false });
+      if(ph.key==='DD')  items.push({ t:'与团队正式告别，留下个人联系方式', role:false });
+    }
     total += items.length;
-    const div = document.createElement('div');
-    div.className='phase';
-    const isNow = ph.key===current ? ' <span class="tag now">当前</span>' : '';
-    div.innerHTML = '<div class="ph-title"><span>'+ph.name+'</span>'+isNow+'</div>';
-    items.forEach((it,i)=>{
-      const k = hStateKey(ph.key, i);
-      const checked = LS.get(k, false);
+    var div = document.createElement('div');
+    div.className = 'phase';
+    var nowTag = ph.key === current ? ' <span class="tag now">当前阶段</span>' : '';
+    var head = document.createElement('div');
+    head.className = 'ph-title';
+    head.innerHTML = '<span>'+ph.name+' <span class="ph-sub">'+ph.sub+'</span></span>'+nowTag;
+    div.appendChild(head);
+    items.forEach(function(it, i){
+      var k = hKey(ph.key, i);
+      var stored = LS.get(k, null);
+      var checked = stored === null ? (DEMO && (ph.key==='T30' || k==='h_T14_0' || k==='h_T14_1')) : stored;
       if(checked) done++;
-      const label = document.createElement('label');
-      label.className='item'+(checked?' done':'');
-      label.innerHTML = '<input type="checkbox" '+(checked?'checked':'')+'><span>'+it+'</span>';
-      label.querySelector('input').onchange = (e)=>{
+      var label = document.createElement('label');
+      label.className = 'item' + (checked ? ' done' : '');
+      label.innerHTML = '<input type="checkbox" class="ck" '+(checked?'checked':'')+'><span>'+it.t+'</span>'+(it.role?'<span class="role-chip">岗位</span>':'');
+      label.querySelector('input').addEventListener('change', function(e){
         LS.set(k, e.target.checked);
         label.classList.toggle('done', e.target.checked);
         renderHandover();
-      };
+      });
       div.appendChild(label);
     });
     wrap.appendChild(div);
   });
-  const pct = total? Math.round(done/total*100):0;
-  document.getElementById('h-bar').style.width = pct+'%';
-  document.getElementById('h-progress-text').textContent = '进度 '+done+'/'+total+' （'+pct+'%）· 岗位：'+role+' · 团队：'+size+(lead?' · 带人':'');
-}
 
-['h-role','h-size','h-lead','h-countdown'].forEach(id=>{
+  var pct = total ? Math.round(done/total*100) : 0;
+  document.getElementById('h-bar').style.width = pct + '%';
+  document.getElementById('h-progress-text').textContent = '进度 ' + done + '/' + total + '（' + pct + '%）· 岗位：' + role + ' · 团队：' + size + (lead ? ' · 带人' : '');
+  document.getElementById('h-progress').classList.toggle('done', pct === 100);
+  document.getElementById('h-done').classList.toggle('show', pct === 100);
+  document.getElementById('h-scale-hint').innerHTML = '<b>规模建议</b> · ' + SCALE_HINT[size];
+}
+['h-role','h-size','h-lead','h-countdown'].forEach(function(id){
   document.getElementById(id).addEventListener('change', renderHandover);
 });
-document.getElementById('h-gen').onclick = renderHandover;
-// 恢复上次输入
+document.getElementById('h-gen').addEventListener('click', renderHandover);
+document.getElementById('h-print').addEventListener('click', function(){ window.print(); });
 document.getElementById('h-role').value = LS.get('h_role','开发');
 document.getElementById('h-size').value = LS.get('h_size','1-5');
 document.getElementById('h-lead').checked = LS.get('h_lead',false);
 document.getElementById('h-countdown').value = LS.get('h_cd',30);
 
-/* ---------------- 模块2：社保断档测算 ---------------- */
-const CITY = {'北京':60,'上海':60,'广州':60,'深圳':36,'杭州':24,'成都':12,'武汉':12,
-  '重庆':12,'苏州':24,'天津':24,'西安':12,'南京':12,'其他':12};
-const sCity = document.getElementById('s-city');
-Object.keys(CITY).forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; sCity.appendChild(o); });
+/* ================= 模块2：断档预警引擎（月粒度） ================= */
+var CITY = {'北京':60,'上海':60,'广州':60,'深圳':36,'杭州':24,'苏州':24,'厦门':24,'天津':24,
+  '成都':12,'武汉':12,'重庆':12,'西安':12,'南京':12,'长沙':12,'合肥':12,'郑州':12,
+  '青岛':12,'济南':12,'福州':12,'宁波':12,'其他':12};
+var sCity = document.getElementById('s-city');
+Object.keys(CITY).forEach(function(c){
+  var o = document.createElement('option'); o.value = c; o.textContent = c; sCity.appendChild(o);
+});
 sCity.value = LS.get('s_city','北京');
-document.getElementById('s-threshold').value = LS.get('s_threshold', CITY['北京']);
-document.getElementById('s-base').value = LS.get('s_base',10000);
+document.getElementById('s-threshold').value = LS.get('s_threshold', CITY[document.getElementById('s-city').value]);
+(function(){ var rv = LS.get('s_rate', 38.5); if(rv < 1) rv = rv*100; document.getElementById('s-rate').value = rv; })();
+document.getElementById('s-base').value = LS.get('s_base', 10000);
 document.getElementById('s-leave').value = LS.get('s_leave','');
-document.getElementById('s-join').value = LS.get('s_join','');
-(function(){ var rv=LS.get('s_rate',38.5); if(rv<1) rv=rv*100; document.getElementById('s-rate').value=rv; })();
-
-function fmtMoney(n){ return '¥'+Math.round(n).toLocaleString('zh-CN'); }
-
-function calcSocial(){
-  const city = sCity.value;
-  const threshold = parseFloat(document.getElementById('s-threshold').value)||0;
-  const base = parseFloat(document.getElementById('s-base').value)||0;
-  const rateRaw = parseFloat(document.getElementById('s-rate').value)||0;
-  const leave = document.getElementById('s-leave').value;
-  const join = document.getElementById('s-join').value;
-  LS.set('s_city',city); LS.set('s_threshold',threshold); LS.set('s_base',base);
-  LS.set('s_leave',leave); LS.set('s_join',join); LS.set('s_rate',rateRaw);
-  const rate = rateRaw/100;
-
-  const arc = document.getElementById('s-arc');
-  const C = 2*Math.PI*62; // 389.56
-  const verdict = document.getElementById('s-verdict');
-  const levelEl = document.getElementById('s-level');
-  const levelSub = document.getElementById('s-level-sub');
-
-  if(!leave || !join){
-    levelEl.textContent='—'; levelSub.textContent='风险等级';
-    arc.setAttribute('stroke','#10b981'); arc.style.strokeDashoffset=C;
-    verdict.className='verdict ok'; verdict.textContent='请填写离职日与入职日。';
-    return;
-  }
-  const d1 = new Date(leave), d2 = new Date(join);
-  const days = Math.round((d2-d1)/86400000);
-  if(days < 0){
-    levelEl.textContent='异常'; levelSub.textContent='日期错误';
-    arc.setAttribute('stroke','#ef4444'); arc.style.strokeDashoffset=0;
-    verdict.className='verdict bad'; verdict.textContent='入职日早于离职日，请检查日期。';
-    document.getElementById('s-days').textContent='—';
-    document.getElementById('s-months').textContent='—';
-    document.getElementById('s-cost').textContent='—';
-    return;
-  }
-  const months = days/30;
-  const cost = months * base * rate;
-  document.getElementById('s-days').textContent = days;
-  document.getElementById('s-months').textContent = months.toFixed(1);
-  document.getElementById('s-cost').textContent = fmtMoney(cost);
-
-  // 风险等级：断档即中断连续缴纳；超过门槛月数 → 资格重算
-  // 环形填充 = 严重度（0 空 → 1 满）；绿色满环表示安全，琥珀/红表示风险递增
-  let level, color, fill, text;
-  if(days===0){
-    level='无断档'; color='#10b981'; fill=1;
-    text='离职与入职无缝衔接，连续缴纳未中断，购房 / 落户资格不受影响。';
-  } else if(months <= threshold){
-    level='已断缴'; color='#f59e0b'; fill=Math.min(months/threshold,1);
-    text='已断缴 '+months.toFixed(1)+' 个月。多数城市要求「连续缴纳」，断档即清零，需从重新缴纳起重新累计满 '+threshold+' 个月才具备购房资格。';
-  } else {
-    level='超门槛'; color='#ef4444'; fill=1;
-    text='断档 '+months.toFixed(1)+' 个月，已超过 '+city+' 购房连续缴纳门槛（'+threshold+' 个月），资格可能需重算。建议优先确认新公司入职当月能否补缴或无缝续保。';
-  }
-  levelEl.textContent = level; levelSub.textContent='风险等级';
-  arc.setAttribute('stroke', color);
-  arc.style.strokeDashoffset = C*(1-fill);
-  verdict.className = 'verdict '+(days===0?'ok':(months<=threshold?'warn':'bad'));
-  verdict.textContent = text;
-}
-['s-city','s-threshold','s-base','s-leave','s-join','s-rate'].forEach(id=>{
+document.getElementById('s-join').value = LS.get('join_date','');
+document.getElementById('s-leave-same').checked = LS.get('s_leave_same', true);
+document.getElementById('s-join-same').checked = LS.get('s_join_same', true);
+sCity.addEventListener('change', function(){
+  document.getElementById('s-threshold').value = CITY[this.value];
+  calcSocial();
+});
+['s-threshold','s-base','s-leave','s-rate'].forEach(function(id){
   document.getElementById(id).addEventListener('change', calcSocial);
 });
-document.getElementById('s-cal').onclick = calcSocial;
-document.getElementById('s-demo').onclick = function(){
-  var t=new Date();
-  var leave=new Date(t); leave.setDate(t.getDate()+9);
-  var join=new Date(leave); join.setDate(leave.getDate()+47);
-  var f=function(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
-  sCity.value='北京';
-  document.getElementById('s-threshold').value=60;
-  document.getElementById('s-base').value=18000;
-  document.getElementById('s-rate').value=38.5;
-  document.getElementById('s-leave').value=f(leave);
-  document.getElementById('s-join').value=f(join);
-  calcSocial();
-};
+['s-leave-same','s-join-same'].forEach(function(id){
+  document.getElementById(id).addEventListener('change', calcSocial);
+});
+document.getElementById('s-cal').addEventListener('click', calcSocial);
+document.getElementById('s-demo').addEventListener('click', runDemoSocial);
 
-/* ---------------- 模块3：试用期100天台账 ---------------- */
-const P_MILE = [
-  {day:7,  title:'第 1 周 · 对齐期望', todo:'与主管确认岗位目标、考核标准、汇报线；列出前 30 天要搞懂的清单。'},
-  {day:30, title:'第 30 天 · 首月复盘', todo:'自检上手进度，主动约主管 1v1 反馈，早暴露风险早沟通。'},
-  {day:60, title:'第 60 天 · Mid Review', todo:'中期回顾校准方向；从今天起准备转正材料（距转正答辩约 30 天）。'},
-  {day:90, title:'第 90 天 · 转正答辩', todo:'整理成果与数据，准备转正答辩 / 述职。'},
-  {day:100,title:'第 100 天 · 转正确认', todo:'确认转正结果、薪资与职级落地，归档复盘笔记。'}
+function monthIdx(y, m){ return y*12 + m; }
+function monthName(idx){ return (idx%12+1) + '月'; }
+
+function calcSocial(){
+  var city = sCity.value;
+  var threshold = parseFloat(document.getElementById('s-threshold').value) || 0;
+  var base = parseFloat(document.getElementById('s-base').value) || 0;
+  var rateRaw = parseFloat(document.getElementById('s-rate').value) || 0;
+  var leave = document.getElementById('s-leave').value;
+  var join = document.getElementById('s-join').value;
+  var leaveSame = document.getElementById('s-leave-same').checked;
+  var joinSame = document.getElementById('s-join-same').checked;
+  LS.set('s_city',city); LS.set('s_threshold',threshold); LS.set('s_base',base);
+  LS.set('s_leave',leave); LS.set('s_rate',rateRaw);
+  LS.set('s_leave_same',leaveSame); LS.set('s_join_same',joinSame);
+  var rate = rateRaw/100;
+
+  var arc = document.getElementById('s-arc');
+  var C = 2*Math.PI*62;
+  var verdict = document.getElementById('s-verdict');
+  var levelEl = document.getElementById('s-level');
+  var gapEl = document.getElementById('s-gap');
+  var daysEl = document.getElementById('s-days');
+  var costEl = document.getElementById('s-cost');
+  var calEl = document.getElementById('s-gapcal');
+
+  function reset(msg, cls){
+    levelEl.textContent = '—';
+    arc.setAttribute('stroke', '#3fb950'); arc.style.strokeDashoffset = C;
+    verdict.className = 'verdict ' + cls; verdict.textContent = msg;
+    gapEl.textContent = '0'; daysEl.textContent = '0'; costEl.textContent = '￥0';
+    calEl.innerHTML = '';
+    LS.set('last_risk', null); updateStatusbar();
+  }
+  if(!leave || !join){ reset('请填写离职日与入职日。', 'ok'); return; }
+  var d1 = new Date(leave+'T00:00:00'), d2 = new Date(join+'T00:00:00');
+  if(d2 < d1){
+    levelEl.textContent = '异常';
+    arc.setAttribute('stroke', '#f85149'); arc.style.strokeDashoffset = 0;
+    verdict.className = 'verdict bad'; verdict.textContent = '入职日早于离职日，请检查日期。';
+    gapEl.textContent = '—'; daysEl.textContent = '—'; costEl.textContent = '—'; calEl.innerHTML = '';
+    LS.set('last_risk', null); updateStatusbar();
+    return;
+  }
+  var days = Math.round((d2-d1)/86400000);
+  /* 边界月口径 */
+  var leavePay = monthIdx(d1.getFullYear(), d1.getMonth()) + (leaveSame ? 0 : 1);
+  var joinPay  = monthIdx(d2.getFullYear(), d2.getMonth()) + (joinSame ? 0 : 1);
+  var gap = joinPay - leavePay - 1; if(gap < 0) gap = 0;
+  var cost = gap * base * rate;
+
+  gapEl.textContent = gap;
+  daysEl.textContent = days;
+  costEl.textContent = '￥' + Math.round(cost).toLocaleString('zh-CN');
+
+  /* 月历块：leavePay 月 .. joinPay 月 */
+  var html = '';
+  var total = joinPay - leavePay + 1;
+  var show = total <= 14;
+  var start = leavePay, end = joinPay;
+  if(!show){ start = joinPay - 6; end = joinPay; html += '<div class="gm ellipsis">…</div>'; }
+  for(var m = start; m <= end; m++){
+    var cls = 'paid';
+    var label = '缴纳';
+    if(m > leavePay && m < joinPay){ cls = 'gap'; label = '断档'; }
+    if(m === joinPay){ cls = 'joinm'; label = '入职续缴'; }
+    html += '<div class="gm '+cls+'"><b>'+monthName(m)+'</b><small>'+label+'</small></div>';
+  }
+  if(!show){
+    html = '';
+    var s2 = leavePay, e2 = leavePay + 6;
+    for(var m2 = s2; m2 <= e2; m2++){
+      var cls2 = (m2 > leavePay && m2 < joinPay) ? 'gap' : 'paid';
+      var lab2 = (m2 > leavePay && m2 < joinPay) ? '断档' : '缴纳';
+      html += '<div class="gm '+cls2+'"><b>'+monthName(m2)+'</b><small>'+lab2+'</small></div>';
+    }
+    html += '<div class="gm ellipsis">… '+ (total-13) +' 个月 …</div>';
+    for(var m3 = joinPay-5; m3 <= joinPay; m3++){
+      var cls3 = 'joinm', lab3 = '入职续缴';
+      if(m3 > leavePay && m3 < joinPay){ cls3 = 'gap'; lab3 = '断档'; }
+      else if(m3 === leavePay){ cls3 = 'paid'; lab3 = '缴纳'; }
+      else { cls3 = 'paid'; lab3 = '缴纳'; }
+      html += '<div class="gm '+cls3+'"><b>'+monthName(m3)+'</b><small>'+lab3+'</small></div>';
+    }
+  }
+  calEl.innerHTML = html;
+
+  var level, color, fill, text, vcls;
+  if(gap === 0){
+    level = '无断档'; color = '#3fb950'; fill = 1; vcls = 'ok';
+    text = '缴纳月份无缝衔接（' + (leaveSame?'离职当月原公司缴纳':'离职次月起断') + ' → ' + (joinSame?'入职当月新公司续缴':'新公司次月起缴') + '），连续缴纳未中断，购房 / 落户资格不受影响。';
+  } else if(gap < threshold){
+    level = '已断缴'; color = '#f5a623'; fill = Math.min(gap/threshold, 1); vcls = 'warn';
+    text = '断档 ' + gap + ' 个整月，连续缴纳已中断（清零）。多数城市规定补缴不计入连续年限，需从重新缴纳月起重新累计满 ' + threshold + ' 个月才恢复购房等资格。可确认：新公司能否入职当月续缴、原公司能否缴至离职当月——任一调整都可能把断档降为 0。';
+  } else {
+    level = '超门槛'; color = '#f85149'; fill = 1; vcls = 'bad';
+    text = '断档 ' + gap + ' 个整月，已达到 / 超过 ' + city + '的参考门槛（' + threshold + ' 个月），资格大概率需重算。建议优先与新旧公司确认边界月缴纳安排，并咨询当地人社部门是否有补缴或资格豁免口径。';
+  }
+  levelEl.textContent = level;
+  arc.setAttribute('stroke', color);
+  arc.style.strokeDashoffset = C * (1 - fill);
+  verdict.className = 'verdict ' + vcls;
+  verdict.textContent = text;
+  LS.set('last_risk', gap); updateStatusbar();
+}
+function runDemoSocial(){
+  var t = today0();
+  var leave = new Date(t); leave.setMonth(t.getMonth()+1); leave.setDate(8);
+  var join = new Date(leave); join.setMonth(leave.getMonth()+3); join.setDate(8);
+  sCity.value = '北京';
+  document.getElementById('s-threshold').value = 60;
+  document.getElementById('s-base').value = 18000;
+  document.getElementById('s-rate').value = 38.5;
+  document.getElementById('s-leave').value = fmtD(leave);
+  document.getElementById('s-join-same').checked = true;
+  document.getElementById('s-leave-same').checked = true;
+  setJoinDate(fmtD(join));
+  calcSocial();
+  genProbation();
+}
+
+/* ================= 模块3：登陆台账 ================= */
+var P_MILE = [
+  { day:7,  title:'第 1 周 · 对齐期望', todo:'站稳的第一步是搞清规则。', tasks:[
+    '拿到组织架构图，认全直属协作链',
+    '与主管确认岗位目标、考核标准与汇报线',
+    '申请齐环境、账号与代码 / 文档权限',
+    '摸清团队节奏（周会、迭代、值班日历）'
+  ]},
+  { day:30, title:'第 30 天 · 首月复盘', todo:'主动暴露风险，别憋到答辩。', tasks:[
+    '自检上手进度与主管预期的差距',
+    '主动约主管 1v1 要一次正式反馈',
+    '输出一份「我这一个月搞懂了什么」文档',
+    '认领一个别人不愿碰的小问题并修掉'
+  ]},
+  { day:60, title:'第 60 天 · 中期校准', todo:'方向校准 + 成果攒数据。', tasks:[
+    '中期回顾：校准剩余 40 天的优先级',
+    '主动承接一个有可见度的任务',
+    '开始量化整理阶段成果（数据 / 截图 / 口碑）',
+    '向主管确认转正答辩的时间与形式'
+  ]},
+  { day:90, title:'第 90 天 · 转正答辩', todo:'把 100 天打成一场有据可查的仗。', tasks:[
+    '整理成果与数据，形成答辩材料',
+    '完成至少一次完整预演',
+    '听取导师 / 主管预审意见并修订'
+  ]},
+  { day:100, title:'第 100 天 · 转正确认', todo:'落袋为安。', tasks:[
+    '确认转正结果、薪资与职级落地文件',
+    '归档复盘笔记，规划下一阶段目标'
+  ]}
 ];
+function pKey(day, i){ return 'p_m_'+day+'_'+i; }
 function genProbation(){
-  const join = document.getElementById('p-join').value;
-  LS.set('p_join', join);
-  const tl = document.getElementById('p-timeline');
-  tl.innerHTML='';
-  if(!join){ tl.innerHTML='<div class="note">请选择入职日。</div>'; return; }
-  const base = new Date(join);
-  const today = new Date(); today.setHours(0,0,0,0);
-  P_MILE.forEach(m=>{
-    const d = new Date(base); d.setDate(d.getDate()+m.day);
-    const diff = Math.round((d-today)/86400000);
-    let cls='', badge='';
-    if(diff < -7){ cls='past'; badge='<span class="badge past">已过</span>'; }
-    else if(diff <= 7){ cls='near'; badge='<span class="badge near">临近</span>'; }
-    else { badge='<span class="badge future">未到</span>'; }
-    const ds = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-    const div = document.createElement('div');
-    div.className='tl-item '+cls;
-    div.innerHTML = '<div class="tl-date">'+ds+'（入职+'+m.day+'天）'+badge+'</div>'+
-                    '<div class="tl-title">'+m.title+'</div>'+
-                    '<div class="tl-todo">'+m.todo+'</div>';
+  var join = document.getElementById('p-join').value;
+  var tl = document.getElementById('p-timeline');
+  tl.innerHTML = '';
+  if(!join){
+    tl.innerHTML = '<div class="note">请选择入职日，或点击「填入示例」看效果。</div>';
+    LS.set('next_mile', null); updateStatusbar();
+    return;
+  }
+  var base = new Date(join+'T00:00:00');
+  var today = today0();
+  var next = null;
+  P_MILE.forEach(function(m){
+    var d = new Date(base); d.setDate(d.getDate()+m.day);
+    var diff = Math.round((d-today)/86400000);
+    var cls = '', badge = '';
+    if(diff < -7){ cls = 'past'; badge = '<span class="badge past">已过</span>'; }
+    else if(diff <= 7){
+      cls = 'near'; badge = '<span class="badge near">临近</span>';
+      if(next === null || diff < next.diff) next = { title:'第 '+m.day+' 天', diff:diff };
+    } else {
+      badge = '<span class="badge future">未到</span>';
+      if(next === null) next = { title:'第 '+m.day+' 天', diff:diff };
+    }
+    var done = 0;
+    m.tasks.forEach(function(_, i){ if(LS.get(pKey(m.day,i), false)) done++; });
+    var tasksHtml = m.tasks.map(function(t, i){
+      var k = pKey(m.day, i);
+      var checked = LS.get(k, false);
+      return '<label class="item'+(checked?' done':'')+'"><input type="checkbox" class="ck" '+(checked?'checked':'')+' data-pk="'+k+'"><span>'+t+'</span></label>';
+    }).join('');
+    var div = document.createElement('div');
+    div.className = 'tl-item '+cls;
+    div.innerHTML = '<div class="tl-date">'+fmtD(d)+'（入职+'+m.day+'天）'+badge+' <span class="mile-prog">'+done+'/'+m.tasks.length+'</span></div>'+
+      '<div class="tl-title">'+m.title+'</div>'+
+      '<div class="tl-todo">'+m.todo+'</div>'+
+      '<div class="tl-tasks">'+tasksHtml+'</div>';
     tl.appendChild(div);
   });
+  tl.querySelectorAll('input[data-pk]').forEach(function(ck){
+    ck.addEventListener('change', function(e){
+      LS.set(e.target.dataset.pk, e.target.checked);
+      genProbation();
+    });
+  });
+  LS.set('next_mile', next); updateStatusbar();
 }
-document.getElementById('p-join').addEventListener('change', genProbation);
-document.getElementById('p-gen').onclick = genProbation;
-document.getElementById('p-demo').onclick = function(){
-  var d=new Date(); d.setDate(d.getDate()-30);
-  var f=function(d2){ return d2.getFullYear()+'-'+String(d2.getMonth()+1).padStart(2,'0')+'-'+String(d2.getDate()).padStart(2,'0'); };
-  document.getElementById('p-join').value=f(d);
+document.getElementById('p-gen').addEventListener('click', genProbation);
+document.getElementById('p-demo').addEventListener('click', function(){
+  var d = today0(); d.setDate(d.getDate()-30);
+  setJoinDate(fmtD(d));
   genProbation();
-};
-document.getElementById('p-join').value = LS.get('p_join','');
+});
 
-/* ---------------- 初始渲染 ---------------- */
+/* ================= 初始渲染 ================= */
 renderHandover();
 calcSocial();
 genProbation();
+updateStatusbar();
 
-/* URL 参数直达：?tab=social&demo=1 自动切 tab 并填入示例，便于分享与演示 */
+/* URL 直达：?tab=social&demo=1 */
 (function(){
-  var qs=new URLSearchParams(location.search);
-  var tab=qs.get('tab');
+  var qs = new URLSearchParams(location.search);
+  var tab = qs.get('tab');
   if(tab){
-    var btn=document.querySelector('.tabs button[data-tab="'+tab+'"]');
-    if(btn) btn.click();
-  }
-  if(qs.get('demo')==='1'){
-    if(tab==='social') document.getElementById('s-demo').click();
-    if(tab==='probation') document.getElementById('p-demo').click();
+    activateTab(tab, false);
+    if(qs.get('demo') === '1'){
+      if(tab === 'social') runDemoSocial();
+      if(tab === 'probation'){
+        var d = today0(); d.setDate(d.getDate()-30);
+        setJoinDate(fmtD(d)); genProbation();
+      }
+    }
   }
 })();
 </script>
