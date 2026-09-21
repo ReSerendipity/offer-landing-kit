@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>到岗前作战包 · Offer→入职 衔接工具</title>
 <meta name="description" content="到岗前作战包：撤离交接清单 / 社保断档预警 / 试用期登陆台账。纯前端本地工具，数据不出本机。">
+<meta property="og:title" content="到岗前作战包 · Offer→入职 衔接工具">
+<meta property="og:description" content="撤离交接清单 / 社保断档预警 / 试用期 100 天台账。别人教你怎么拿 offer，这里管你怎么不翻车。纯前端，数据 100% 本地。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://reserendipity.github.io/offer-landing-kit/">
+<meta property="og:image" content="https://reserendipity.github.io/offer-landing-kit/assets/tab-handover.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230b0f14'/%3E%3Cpath d='M28 54 L44 68 L73 34' stroke='%23f5a623' stroke-width='11' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <style>
 :root{
@@ -224,6 +229,8 @@ code{background:var(--card2); padding:1px 6px; border-radius:6px; font-size:12.5
 }
 @media print{
   body{background:#fff; color:#000; background-image:none;}
+  .ck{appearance:auto !important; -webkit-appearance:auto !important; width:auto; height:auto; background:none; border:none;}
+  .ck:checked::after{display:none;}
   .hero,.tabs,.statusbar,.btnrow,.no-print,footer,#social,#probation,.mission-done{display:none !important;}
   main{max-width:100%; padding:0;}
   .panel{display:block !important;}
@@ -268,10 +275,10 @@ code{background:var(--card2); padding:1px 6px; border-radius:6px; font-size:12.5
   </div>
 </section>
 
-<nav class="tabs no-print">
-  <button data-tab="handover" class="active"><svg class="ic"><use href="#i-list"/></svg>撤离清单</button>
-  <button data-tab="social"><svg class="ic"><use href="#i-gauge"/></svg>断档预警</button>
-  <button data-tab="probation"><svg class="ic"><use href="#i-flag"/></svg>登陆台账</button>
+<nav class="tabs no-print" role="tablist" aria-label="功能模块">
+  <button data-tab="handover" class="active" role="tab" aria-selected="true"><svg class="ic"><use href="#i-list"/></svg>撤离清单</button>
+  <button data-tab="social" role="tab" aria-selected="false"><svg class="ic"><use href="#i-gauge"/></svg>断档预警</button>
+  <button data-tab="probation" role="tab" aria-selected="false"><svg class="ic"><use href="#i-flag"/></svg>登陆台账</button>
 </nav>
 
 <main>
@@ -443,9 +450,9 @@ function activateTab(tab, push){
   if(TABS.indexOf(tab) < 0) return;
   var btn = document.querySelector('.tabs button[data-tab="'+tab+'"]');
   if(!btn) return;
-  document.querySelectorAll('.tabs button').forEach(function(x){ x.classList.remove('active'); });
+  document.querySelectorAll('.tabs button').forEach(function(x){ x.classList.remove('active'); x.setAttribute('aria-selected','false'); });
   document.querySelectorAll('.panel').forEach(function(x){ x.classList.remove('active'); });
-  btn.classList.add('active');
+  btn.classList.add('active'); btn.setAttribute('aria-selected','true');
   document.getElementById(tab).classList.add('active');
   if(push !== false){
     try{ history.replaceState(null, '', '?tab='+tab+(DEMO?'&demo=1':'')); }catch(e){}
@@ -537,7 +544,9 @@ var SCALE_HINT = {
   '21-50':'多团队协作：跨团队依赖（中台、网关、数据）需<b>逐项找对应负责人确认</b>，避免口头交接。',
   '50+':'流程化组织：走公司交接系统 / HR 监督流程，本清单作为<b>自查补充</b>，签字页拍照留存。'
 };
-function hKey(ph, i){ return 'h_'+ph+'_'+i; }
+/* 勾选 key 按条目文本哈希生成：切换岗位 / 带人后条目数量变化也不会错位 */
+function hashStr(s){ var h=0; for(var i=0;i<s.length;i++){ h=(h*31+s.charCodeAt(i))>>>0; } return h.toString(36); }
+function hKey(ph, t){ return 'h_'+ph+'_'+hashStr(t); }
 
 function renderHandover(){
   var role = document.getElementById('h-role').value;
@@ -570,9 +579,9 @@ function renderHandover(){
     head.innerHTML = '<span>'+ph.name+' <span class="ph-sub">'+ph.sub+'</span></span>'+nowTag;
     div.appendChild(head);
     items.forEach(function(it, i){
-      var k = hKey(ph.key, i);
+      var k = hKey(ph.key, it.t);
       var stored = LS.get(k, null);
-      var checked = stored === null ? (DEMO && (ph.key==='T30' || k==='h_T14_0' || k==='h_T14_1')) : stored;
+      var checked = stored === null ? (DEMO && (ph.key==='T30' || (ph.key==='T14' && i<2))) : stored;
       if(checked) done++;
       var label = document.createElement('label');
       label.className = 'item' + (checked ? ' done' : '');
@@ -826,8 +835,16 @@ function genProbation(){
   });
   tl.querySelectorAll('input[data-pk]').forEach(function(ck){
     ck.addEventListener('change', function(e){
-      LS.set(e.target.dataset.pk, e.target.checked);
-      genProbation();
+      var checked = e.target.checked;
+      LS.set(e.target.dataset.pk, checked);
+      /* 原地更新：只刷新当前项样式与该里程碑的完成计数，不重建 DOM */
+      var label = e.target.closest('.item');
+      if(label) label.classList.toggle('done', checked);
+      var box = e.target.closest('.tl-tasks');
+      var done = 0;
+      box.querySelectorAll('input[data-pk]').forEach(function(c){ if(c.checked) done++; });
+      var prog = box.parentElement.querySelector('.mile-prog');
+      if(prog) prog.textContent = done + '/' + box.querySelectorAll('input[data-pk]').length;
     });
   });
   LS.set('next_mile', next); updateStatusbar();
