@@ -61,4 +61,4 @@
 
 ## License
 
-MIT © 2026 ReSerendipity
+Apache-2.0 © 2026 ReSerendipity
