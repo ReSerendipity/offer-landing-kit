@@ -502,40 +502,41 @@ document.getElementById('s-join').addEventListener('change', function(){ setJoin
 document.getElementById('p-join').addEventListener('change', function(){ setJoinDate(this.value); genProbation(); });
 
 /* ================= 模块1：撤离清单引擎 ================= */
+/* 每个条目带稳定 id：勾选进度按 id 存储，展示文案改动不再丢进度 */
 var H_PHASES = [
   { key:'T30', name:'T-30 · 集结期', sub:'START', items:[
-    '整理个人文档、账号与密码清单（不含机密）',
-    '梳理在跟项目、负责人与当前进度',
-    '盘点未完成的待办与遗留问题',
-    '按公司流程向主管同步离职意向'
+    { id:'c-t30-1', t:'整理个人文档、账号与密码清单（不含机密）' },
+    { id:'c-t30-2', t:'梳理在跟项目、负责人与当前进度' },
+    { id:'c-t30-3', t:'盘点未完成的待办与遗留问题' },
+    { id:'c-t30-4', t:'按公司流程向主管同步离职意向' }
   ]},
   { key:'T14', name:'T-14 · 移交期', sub:'HANDOVER', items:[
-    '输出交接文档初稿（项目/账号/对接人）',
-    '指定临时接手人并拉群同步',
-    '整理账号与权限移交清单',
-    '梳理外部对接人（客户 / 供应商 / 合作方）'
+    { id:'c-t14-1', t:'输出交接文档初稿（项目/账号/对接人）' },
+    { id:'c-t14-2', t:'指定临时接手人并拉群同步' },
+    { id:'c-t14-3', t:'整理账号与权限移交清单' },
+    { id:'c-t14-4', t:'梳理外部对接人（客户 / 供应商 / 合作方）' }
   ]},
   { key:'T7', name:'T-7 · 交底期', sub:'BRIEFING', items:[
-    '交接文档评审并补全',
-    '进行第一次正式面对面交接',
-    '归还公司资产（设备 / 门禁 / 工牌）',
-    '确认剩余年假与调休处理'
+    { id:'c-t7-1', t:'交接文档评审并补全' },
+    { id:'c-t7-2', t:'进行第一次正式面对面交接' },
+    { id:'c-t7-3', t:'归还公司资产（设备 / 门禁 / 工牌）' },
+    { id:'c-t7-4', t:'确认剩余年假与调休处理' }
   ]},
   { key:'DD', name:'D-Day · 撤离日', sub:'EVAC', items:[
-    '完成最终交接签字',
-    '退出相关群聊并移交权限',
-    '发送交接邮件（含联系人清单）',
-    '备份个人资料（不含公司机密）',
-    'IT 资产回收确认'
+    { id:'c-dd-1', t:'完成最终交接签字' },
+    { id:'c-dd-2', t:'退出相关群聊并移交权限' },
+    { id:'c-dd-3', t:'发送交接邮件（含联系人清单）' },
+    { id:'c-dd-4', t:'备份个人资料（不含公司机密）' },
+    { id:'c-dd-5', t:'IT 资产回收确认' }
   ]}
 ];
 /* 岗位专属条目：真正影响清单内容 */
 var ROLE_EXTRA = {
-  '开发': { T14:['代码仓库、分支与 CI 权限清单移交','生产环境密钥 / 证书 / 配置交接'], T7:['线上值班与告警响应移交','线上遗留问题与 crash 责任书面移交'] },
-  '测试': { T30:['缺陷遗留清单与风险等级说明'], T14:['测试用例库与自动化脚本移交','测试环境账号与配置清单整理'] },
-  '产品': { T30:['进行中需求的状态与关键决策记录'], T14:['PRD 与需求文档归档移交','数据看板与埋点字典移交'] },
-  '设计': { T14:['设计源文件与组件库移交','设计规范与切图标注归档'], T7:['进行中视觉稿进度与验收口径说明'] },
-  '运营': { T30:['活动排期与在办事项说明'], T14:['运营账号与权限移交','社群 / 用户资产清单交接'] },
+  '开发': { T14:[{ id:'dev-t14-1', t:'代码仓库、分支与 CI 权限清单移交' },{ id:'dev-t14-2', t:'生产环境密钥 / 证书 / 配置交接' }], T7:[{ id:'dev-t7-1', t:'线上值班与告警响应移交' },{ id:'dev-t7-2', t:'线上遗留问题与 crash 责任书面移交' }] },
+  '测试': { T30:[{ id:'qa-t30-1', t:'缺陷遗留清单与风险等级说明' }], T14:[{ id:'qa-t14-1', t:'测试用例库与自动化脚本移交' },{ id:'qa-t14-2', t:'测试环境账号与配置清单整理' }] },
+  '产品': { T30:[{ id:'pm-t30-1', t:'进行中需求的状态与关键决策记录' }], T14:[{ id:'pm-t14-1', t:'PRD 与需求文档归档移交' },{ id:'pm-t14-2', t:'数据看板与埋点字典移交' }] },
+  '设计': { T14:[{ id:'ux-t14-1', t:'设计源文件与组件库移交' },{ id:'ux-t14-2', t:'设计规范与切图标注归档' }], T7:[{ id:'ux-t7-1', t:'进行中视觉稿进度与验收口径说明' }] },
+  '运营': { T30:[{ id:'ops-t30-1', t:'活动排期与在办事项说明' }], T14:[{ id:'ops-t14-1', t:'运营账号与权限移交' },{ id:'ops-t14-2', t:'社群 / 用户资产清单交接' }] },
   '通用': {}
 };
 var SCALE_HINT = {
@@ -544,9 +545,20 @@ var SCALE_HINT = {
   '21-50':'多团队协作：跨团队依赖（中台、网关、数据）需<b>逐项找对应负责人确认</b>，避免口头交接。',
   '50+':'流程化组织：走公司交接系统 / HR 监督流程，本清单作为<b>自查补充</b>，签字页拍照留存。'
 };
-/* 勾选 key 按条目文本哈希生成：切换岗位 / 带人后条目数量变化也不会错位 */
+/* 勾选 key 按条目稳定 id 生成：编辑展示文案不会丢进度；切换岗位 / 带人后条目数量变化也不会错位 */
+function hKey(ph, id){ return 'h_'+ph+'_'+id; }
+/* 旧版（v2.0）以条目文本哈希作 key（h_<阶段>_<hash(文本)>），首次读到新 key 为空时一次性迁移并删除旧键 */
 function hashStr(s){ var h=0; for(var i=0;i<s.length;i++){ h=(h*31+s.charCodeAt(i))>>>0; } return h.toString(36); }
-function hKey(ph, t){ return 'h_'+ph+'_'+hashStr(t); }
+function migrateLegacyHKey(ph, text, k){
+  try{
+    var oldKey = 'dzb2_h_'+ph+'_'+hashStr(text);
+    var v = localStorage.getItem(oldKey);
+    if(v === null) return null;
+    localStorage.setItem('dzb2_'+k, v);
+    localStorage.removeItem(oldKey);
+    return JSON.parse(v);
+  }catch(e){ return null; }
+}
 
 function renderHandover(){
   var role = document.getElementById('h-role').value;
@@ -562,13 +574,13 @@ function renderHandover(){
   var total = 0, done = 0;
 
   H_PHASES.forEach(function(ph){
-    var items = ph.items.map(function(t){ return { t:t, role:false }; });
-    (extra[ph.key] || []).forEach(function(t){ items.push({ t:t, role:true }); });
+    var items = ph.items.map(function(it){ return { id:it.id, t:it.t, role:false }; });
+    (extra[ph.key] || []).forEach(function(it){ items.push({ id:it.id, t:it.t, role:true }); });
     if(lead){
-      if(ph.key==='T30') items.push({ t:'与下属 1v1 沟通去向，稳定团队情绪', role:false });
-      if(ph.key==='T14') items.push({ t:'指定下属临时负责人，明确汇报线；重新分配成员工作并交底', role:false });
-      if(ph.key==='T7')  items.push({ t:'完成下属工作分配确认；约定过渡期答疑窗口', role:false });
-      if(ph.key==='DD')  items.push({ t:'与团队正式告别，留下个人联系方式', role:false });
+      if(ph.key==='T30') items.push({ id:'ld-t30', t:'与下属 1v1 沟通去向，稳定团队情绪', role:false });
+      if(ph.key==='T14') items.push({ id:'ld-t14', t:'指定下属临时负责人，明确汇报线；重新分配成员工作并交底', role:false });
+      if(ph.key==='T7')  items.push({ id:'ld-t7',  t:'完成下属工作分配确认；约定过渡期答疑窗口', role:false });
+      if(ph.key==='DD')  items.push({ id:'ld-dd',  t:'与团队正式告别，留下个人联系方式', role:false });
     }
     total += items.length;
     var div = document.createElement('div');
@@ -579,8 +591,9 @@ function renderHandover(){
     head.innerHTML = '<span>'+ph.name+' <span class="ph-sub">'+ph.sub+'</span></span>'+nowTag;
     div.appendChild(head);
     items.forEach(function(it, i){
-      var k = hKey(ph.key, it.t);
+      var k = hKey(ph.key, it.id);
       var stored = LS.get(k, null);
+      if(stored === null) stored = migrateLegacyHKey(ph.key, it.t, k);
       var checked = stored === null ? (DEMO && (ph.key==='T30' || (ph.key==='T14' && i<2))) : stored;
       if(checked) done++;
       var label = document.createElement('label');
@@ -613,7 +626,9 @@ document.getElementById('h-size').value = LS.get('h_size','1-5');
 document.getElementById('h-lead').checked = LS.get('h_lead',false);
 document.getElementById('h-countdown').value = LS.get('h_cd',30);
 
-/* ================= 模块2：断档预警引擎（月粒度） ================= */
+/* ================= 模块2：断档预警引擎（月粒度） =================
+   改动本引擎（calcSocial / 边界月口径 / runDemoSocial）前后，
+   请按 docs/social-gap-check.md 重跑最小核对；机械检查：node tools/check-social-gap.mjs */
 var CITY = {'北京':60,'上海':60,'广州':60,'深圳':36,'杭州':24,'苏州':24,'厦门':24,'天津':24,
   '成都':12,'武汉':12,'重庆':12,'西安':12,'南京':12,'长沙':12,'合肥':12,'郑州':12,
   '青岛':12,'济南':12,'福州':12,'宁波':12,'其他':12};
